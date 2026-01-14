@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saldo - Keuanganku</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #6366f1; --success: #10b981; --danger: #f43f5e; --warning: #f59e0b; --info: #3b82f6; --bg: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); padding: 20px; }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .btn-back { width: 40px; height: 40px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #1e293b; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .main-card { background: linear-gradient(135deg, #4f46e5, #818cf8); padding: 30px; border-radius: 30px; color: white; text-align: center; margin-bottom: 25px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: white; padding: 20px; border-radius: 20px; border: 1px solid #e2e8f0; }
+        .card span { font-size: 0.7rem; color: #64748b; font-weight: 700; }
+        .c-in { color: var(--success); } .c-out { color: var(--danger); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="btn-back"><i class="fas fa-chevron-left"></i></a>
+        <h2 style="font-weight: 700;">Total Saldo</h2>
+    </div>
+    <div class="main-card"><p>Sisa Saldo Anda</p><h1 id="totalSaldo">Rp 0</h1></div>
+    <div class="grid">
+        <div class="card"><span>Pemasukan (+)</span><h3 id="txtIn" class="c-in">Rp 0</h3></div>
+        <div class="card"><span>Pengeluaran (-)</span><h3 id="txtOut" class="c-out">Rp 0</h3></div>
+        <div class="card"><span>Pinjaman (+)</span><h3 id="txtPinjam" style="color:var(--warning)">Rp 0</h3></div>
+        <div class="card"><span>Piutang (-)</span><h3 id="txtPiutang" style="color:var(--info)">Rp 0</h3></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVn13EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function updateSaldo() {
+            const snap = await getDocs(collection(db, "transaksi"));
+            let i=0, o=0, p1=0, p2=0;
+            snap.forEach(doc => {
+                const d = doc.data();
+                if(d.type==='pemasukan') i+=d.amount;
+                else if(d.type==='pengeluaran') o+=d.amount;
+                else if(d.type==='pinjaman') p1+=d.amount;
+                else if(d.type==='piutang') p2+=d.amount;
+            });
+            const total = i - o + p1 - p2;
+            document.getElementById('totalSaldo').innerText = "Rp " + total.toLocaleString('id-ID');
+            document.getElementById('txtIn').innerText = "Rp " + i.toLocaleString('id-ID');
+            document.getElementById('txtOut').innerText = "Rp " + o.toLocaleString('id-ID');
+            document.getElementById('txtPinjam').innerText = "Rp " + p1.toLocaleString('id-ID');
+            document.getElementById('txtPiutang').innerText = "Rp " + p2.toLocaleString('id-ID');
+        }
+        updateSaldo();
+    </script>
+</body>
+</html>
