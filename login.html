@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Keuanganku</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            border-radius: 22px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        h2 {
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        p {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            background: #ffffff;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 16px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary);
+            color: #ffffff;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-alt {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-card">
+    <h2 id="title">Selamat Datang</h2>
+    <p id="desc">Silakan masuk ke akun Anda</p>
+
+    <input type="email" id="email" placeholder="Email">
+
+    <div class="password-container">
+        <input type="password" id="password" placeholder="Password">
+        <i class="fa-solid fa-eye toggle-password" id="eyeIcon"></i>
+    </div>
+
+    <button class="btn" id="mainBtn">Masuk</button>
+    <button class="btn-alt" id="toggleBtn">Belum punya akun? Daftar</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+        getAuth,
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    // ===============================
+    // 🔴 WAJIB: GANTI DARI FIREBASE
+    // ===============================
+    const firebaseConfig = {
+        apiKey: "PASTE_API_KEY_DARI_FIREBASE_CONSOLE",
+        authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+        projectId: "catatan-keuanganku-602cf",
+        storageBucket: "catatan-keuanganku-602cf.appspot.com",
+        messagingSenderId: "160296493240",
+        appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let isLogin = true;
+
+    const title = document.getElementById("title");
+    const desc = document.getElementById("desc");
+    const mainBtn = document.getElementById("mainBtn");
+    const toggleBtn = document.getElementById("toggleBtn");
+    const emailInput = document.getElementById("email");
+    const passInput = document.getElementById("password");
+    const eyeIcon = document.getElementById("eyeIcon");
+
+    eyeIcon.onclick = () => {
+        if (passInput.type === "password") {
+            passInput.type = "text";
+            eyeIcon.classList.replace("fa-eye", "fa-eye-slash");
+        } else {
+            passInput.type = "password";
+            eyeIcon.classList.replace("fa-eye-slash", "fa-eye");
+        }
+    };
+
+    toggleBtn.onclick = () => {
+        isLogin = !isLogin;
+        title.innerText = isLogin ? "Selamat Datang" : "Buat Akun";
+        desc.innerText = isLogin ? "Silakan masuk ke akun Anda" : "Silakan daftar akun baru";
+        mainBtn.innerText = isLogin ? "Masuk" : "Daftar";
+        toggleBtn.innerText = isLogin ? "Belum punya akun? Daftar" : "Sudah punya akun? Masuk";
+    };
+
+    mainBtn.onclick = async () => {
+        const email = emailInput.value.trim();
+        const password = passInput.value.trim();
+
+        if (!email || !password) {
+            alert("Email dan password wajib diisi");
+            return;
+        }
+
+        if (password.length < 6) {
+            alert("Password minimal 6 karakter");
+            return;
+        }
+
+        mainBtn.disabled = true;
+        mainBtn.innerText = "Memproses...";
+
+        try {
+            if (isLogin) {
+                await signInWithEmailAndPassword(auth, email, password);
+            } else {
+                await createUserWithEmailAndPassword(auth, email, password);
+            }
+            window.location.href = "index.html";
+        } catch (err) {
+            let msg = "Terjadi kesalahan";
+            if (err.code === "auth/email-already-in-use") msg = "Email sudah terdaftar";
+            if (err.code === "auth/user-not-found") msg = "Akun tidak ditemukan";
+            if (err.code === "auth/wrong-password") msg = "Password salah";
+            alert(msg);
+        } finally {
+            mainBtn.disabled = false;
+            mainBtn.innerText = isLogin ? "Masuk" : "Daftar";
+        }
+    };
+
+    onAuthStateChanged(auth, user => {
+        if (user) {
+            window.location.href = "index.html";
+        }
+    });
+</script>
+
+</body>
+</html>

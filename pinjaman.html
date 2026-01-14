@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinjaman - Keuanganku</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --warning: #f59e0b; --bg: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); padding: 20px; color: #1e293b; }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .btn-back { 
+            width: 40px; height: 40px; background: white; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            text-decoration: none; color: #1e293b; box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+        }
+
+        .summary { 
+            background: linear-gradient(135deg, #f59e0b, #fbbf24); 
+            padding: 25px; border-radius: 25px; color: white; 
+            margin-bottom: 20px; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+        }
+        .summary p { font-size: 0.9rem; opacity: 0.9; }
+        .summary h2 { font-size: 1.8rem; margin-top: 5px; }
+
+        .list-container { display: flex; flex-direction: column; gap: 12px; }
+        .item-card { 
+            background: white; padding: 18px; border-radius: 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border: 1px solid #e2e8f0;
+        }
+        .item-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+        .item-info p { font-size: 0.75rem; color: #94a3b8; }
+        .amount { color: var(--warning); font-weight: 700; font-size: 1rem; }
+
+        .status-msg { text-align: center; padding: 40px 20px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html" class="btn-back"><i class="fas fa-chevron-left"></i></a>
+        <h2 style="font-weight: 700;">Hutang Saya</h2>
+    </div>
+
+    <div class="summary">
+        <p>Total Pinjaman Aktif</p>
+        <h2 id="totalPinjam">Rp 0</h2>
+    </div>
+
+    <div id="list" class="list-container">
+        <div class="status-msg">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Memuat data pinjaman...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVn13EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadPinjaman() {
+            const container = document.getElementById('list');
+            try {
+                // Mencari transaksi dengan tipe 'pinjaman'
+                const q = query(
+                    collection(db, "transaksi"), 
+                    where("type", "==", "pinjaman")
+                );
+                
+                const snap = await getDocs(q);
+                let total = 0;
+                container.innerHTML = "";
+
+                if (snap.empty) {
+                    container.innerHTML = `<div class="status-msg"><p>Tidak ada catatan pinjaman.</p></div>`;
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    total += d.amount;
+                    
+                    const tgl = d.createdAt ? d.createdAt.toDate().toLocaleDateString('id-ID') : '-';
+
+                    container.innerHTML += `
+                        <div class="item-card">
+                            <div class="item-info">
+                                <h4>${d.note || 'Pinjaman'}</h4>
+                                <p>${tgl}</p>
+                            </div>
+                            <div class="amount">+ Rp ${d.amount.toLocaleString('id-ID')}</div>
+                        </div>`;
+                });
+
+                document.getElementById('totalPinjam').innerText = "Rp " + total.toLocaleString('id-ID');
+
+            } catch (err) {
+                container.innerHTML = `<p style="color:red; text-align:center;">Gagal memuat: ${err.message}</p>`;
+            }
+        }
+
+        loadPinjaman();
+    </script>
+</body>
+</html>

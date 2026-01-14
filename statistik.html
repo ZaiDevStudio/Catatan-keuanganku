@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistik - Keuanganku</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #6366f1; --bg: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); padding: 20px; color: #1e293b; }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .btn-back { 
+            width: 40px; height: 40px; background: white; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            text-decoration: none; color: #1e293b; box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+        }
+
+        /* Tab System */
+        .tabs { 
+            display: flex; background: #e2e8f0; padding: 5px; 
+            border-radius: 15px; margin-bottom: 25px; 
+        }
+        .tab-btn { 
+            flex: 1; padding: 10px; border: none; border-radius: 12px; 
+            background: none; font-weight: 600; color: #64748b; 
+            cursor: pointer; transition: 0.3s; font-size: 0.85rem;
+        }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        .card { 
+            background: white; padding: 20px; border-radius: 25px; 
+            border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.02);
+        }
+        .loading { text-align: center; padding: 50px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html" class="btn-back"><i class="fas fa-chevron-left"></i></a>
+        <h2 style="font-weight: 700;">Statistik Keuangan</h2>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="changeView('week', this)">Minggu</button>
+        <button class="tab-btn" onclick="changeView('month', this)">Bulan</button>
+        <button class="tab-btn" onclick="changeView('year', this)">Tahun</button>
+    </div>
+
+    <div class="card">
+        <div id="loader" class="loading">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p style="margin-top:10px">Menghitung data...</p>
+        </div>
+        <canvas id="mainChart"></canvas>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVn13EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        let allTransactions = [];
+        let myChart = null;
+
+        async function init() {
+            const snap = await getDocs(collection(db, "transaksi"));
+            allTransactions = snap.docs.map(doc => doc.data());
+            document.getElementById('loader').style.display = 'none';
+            updateChart('week'); // Default view
+        }
+
+        window.changeView = (view, btn) => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateChart(view);
+        }
+
+        function updateChart(view) {
+            let labels = [];
+            let inData = [];
+            let outData = [];
+
+            if (view === 'week') {
+                labels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+                inData = new Array(7).fill(0);
+                outData = new Array(7).fill(0);
+                allTransactions.forEach(d => {
+                    if (d.createdAt) {
+                        const day = d.createdAt.toDate().getDay();
+                        if (d.type === 'pemasukan' || d.type === 'pinjaman') inData[day] += d.amount;
+                        else outData[day] += d.amount;
+                    }
+                });
+            } 
+            else if (view === 'month') {
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                inData = new Array(12).fill(0);
+                outData = new Array(12).fill(0);
+                allTransactions.forEach(d => {
+                    if (d.createdAt) {
+                        const month = d.createdAt.toDate().getMonth();
+                        if (d.type === 'pemasukan' || d.type === 'pinjaman') inData[month] += d.amount;
+                        else outData[month] += d.amount;
+                    }
+                });
+            }
+            else if (view === 'year') {
+                const currentYear = new Date().getFullYear();
+                labels = [currentYear - 2, currentYear - 1, currentYear];
+                inData = new Array(3).fill(0);
+                outData = new Array(3).fill(0);
+                allTransactions.forEach(d => {
+                    if (d.createdAt) {
+                        const year = d.createdAt.toDate().getFullYear();
+                        const idx = labels.indexOf(year);
+                        if (idx !== -1) {
+                            if (d.type === 'pemasukan' || d.type === 'pinjaman') inData[idx] += d.amount;
+                            else outData[idx] += d.amount;
+                        }
+                    }
+                });
+            }
+
+            if (myChart) myChart.destroy();
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Masuk', data: inData, backgroundColor: '#10b981', borderRadius: 5 },
+                        { label: 'Keluar', data: outData, backgroundColor: '#f43f5e', borderRadius: 5 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true, position: 'bottom' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

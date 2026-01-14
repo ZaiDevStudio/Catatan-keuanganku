@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengeluaran - Keuanganku</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --danger: #f43f5e; --bg: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); padding: 20px; color: #1e293b; }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .btn-back { width: 40px; height: 40px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #1e293b; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .summary { background: linear-gradient(135deg, #f43f5e, #fb7185); padding: 25px; border-radius: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(244, 63, 94, 0.2); }
+        .item-card { background: white; padding: 18px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border: 1px solid #e2e8f0; }
+        .amount { color: var(--danger); font-weight: 700; }
+        .empty-state { text-align: center; padding: 40px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="btn-back"><i class="fas fa-chevron-left"></i></a>
+        <h2 style="font-weight: 700;">Pengeluaran</h2>
+    </div>
+    <div class="summary"><p>Total Pengeluaran</p><h2 id="totalOut">Rp 0</h2></div>
+    <div id="list"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVn13EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function load() {
+            const container = document.getElementById('list');
+            try {
+                const q = query(collection(db, "transaksi"), where("type", "==", "pengeluaran"));
+                const snap = await getDocs(q);
+                let total = 0;
+                container.innerHTML = "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    total += d.amount;
+                    container.innerHTML += `<div class="item-card"><div><h4>${d.note}</h4><p>${d.createdAt?.toDate().toLocaleDateString('id-ID') || '-'}</p></div><div class="amount">- Rp ${d.amount.toLocaleString('id-ID')}</div></div>`;
+                });
+                document.getElementById('totalOut').innerText = "Rp " + total.toLocaleString('id-ID');
+            } catch (e) { container.innerHTML = "Gagal memuat data."; }
+        }
+        load();
+    </script>
+</body>
+</html>
