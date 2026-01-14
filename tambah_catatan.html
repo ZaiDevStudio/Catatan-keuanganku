@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah/Edit - Keuanganku</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #6366f1; --bg: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #e2e8f0; outline: none; }
+        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; background: var(--primary); color: white; font-weight: 700; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3 id="titlePage">Tambah Catatan</h3><br>
+        <select id="type">
+            <option value="pemasukan">Pemasukan</option>
+            <option value="pengeluaran">Pengeluaran</option>
+            <option value="pinjaman">Pinjaman</option>
+            <option value="piutang">Piutang</option>
+        </select>
+        <input type="number" id="amount" placeholder="Nominal Rp">
+        <textarea id="note" placeholder="Keterangan"></textarea>
+        <button class="btn" onclick="simpan()">Simpan</button>
+        <button id="btnHapus" onclick="hapus()" style="display:none; width:100%; margin-top:10px; background:none; color:#ef4444; border:none; cursor:pointer;">Hapus Catatan Ini</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, updateDoc, deleteDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg", authDomain: "catatan-keuanganku-602cf.firebaseapp.com", projectId: "catatan-keuanganku-602cf", storageBucket: "catatan-keuanganku-602cf.firebasestorage.app", messagingSenderId: "160296493240", appId: "1:160296493240:web:59faa4de1b4d5d0513944d" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const id = new URLSearchParams(window.location.search).get('id');
+
+        if(id) {
+            document.getElementById('titlePage').innerText = "Edit Catatan";
+            document.getElementById('btnHapus').style.display = "block";
+            const snap = await getDoc(doc(db, "transaksi", id));
+            const d = snap.data();
+            document.getElementById('type').value = d.type;
+            document.getElementById('amount').value = d.amount;
+            document.getElementById('note').value = d.note;
+        }
+
+        window.simpan = async () => {
+            const data = {
+                type: document.getElementById('type').value,
+                amount: parseInt(document.getElementById('amount').value),
+                note: document.getElementById('note').value,
+                userId: auth.currentUser.uid,
+                updatedAt: serverTimestamp()
+            };
+            if(id) await updateDoc(doc(db, "transaksi", id), data);
+            else {
+                data.createdAt = serverTimestamp();
+                await addDoc(collection(db, "transaksi"), data);
+            }
+            window.location.href = "index.html";
+        };
+
+        window.hapus = async () => {
+            if(confirm("Hapus?")) {
+                await deleteDoc(doc(db, "transaksi", id));
+                window.location.href = "index.html";
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Keuanganku</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #6366f1; --bg: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
+        .login-card { background: white; padding: 35px; border-radius: 30px; width: 100%; max-width: 400px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); text-align: center; }
+        input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; outline: none; }
+        .pass-container { position: relative; width: 100%; }
+        .pass-container i { position: absolute; right: 15px; top: 15px; color: #94a3b8; cursor: pointer; }
+        .btn-auth { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-switch { background: none; color: var(--primary); font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2 id="title">Selamat Datang</h2>
+        <p id="desc" style="color:#64748b; margin-bottom:25px">Kelola keuangan pribadimu</p>
+        <input type="email" id="email" placeholder="Email">
+        <div class="pass-container">
+            <input type="password" id="password" placeholder="Password (Min. 6 Karakter)">
+            <i class="fas fa-eye" id="eye" onclick="toggleView()"></i>
+        </div>
+        <button class="btn-auth" id="btnMain" onclick="runAuth()">Masuk</button>
+        <button class="btn-switch" id="btnMode" onclick="changeMode()">Belum punya akun? Daftar</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        let isLogin = true;
+
+        window.toggleView = () => {
+            const p = document.getElementById('password');
+            const i = document.getElementById('eye');
+            p.type = p.type === "password" ? "text" : "password";
+            i.className = p.type === "password" ? "fas fa-eye" : "fas fa-eye-slash";
+        };
+
+        window.changeMode = () => {
+            isLogin = !isLogin;
+            document.getElementById('title').innerText = isLogin ? 'Selamat Datang' : 'Buat Akun';
+            document.getElementById('btnMain').innerText = isLogin ? 'Masuk' : 'Daftar Sekarang';
+            document.getElementById('btnMode').innerText = isLogin ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar';
+        };
+
+        window.runAuth = async () => {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('password').value;
+            try {
+                if (isLogin) await signInWithEmailAndPassword(auth, e, p);
+                else await createUserWithEmailAndPassword(auth, e, p);
+                window.location.href = "index.html";
+            } catch (err) { alert(err.message); }
+        };
+    </script>
+</body>
+</html>

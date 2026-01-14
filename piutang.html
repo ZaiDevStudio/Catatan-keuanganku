@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Piutang - Keuanganku</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #3b82f6; --bg: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); padding: 20px; color: #1e293b; }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .btn-back { width: 40px; height: 40px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #1e293b; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        .summary-card { 
+            background: var(--primary); color: white; padding: 25px; 
+            border-radius: 25px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+        }
+        .summary-card h2 { font-size: 1.8rem; margin: 5px 0; }
+        .btn-delete-all { 
+            background: rgba(255,255,255,0.2); border: none; color: white; 
+            padding: 8px 15px; border-radius: 10px; font-size: 0.75rem; 
+            cursor: pointer; margin-top: 10px; font-weight: 600;
+        }
+
+        .list-container { display: flex; flex-direction: column; gap: 12px; }
+        .item-card { 
+            background: white; padding: 18px; border-radius: 18px; 
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid #e2e8f0;
+        }
+        .item-info h4 { font-size: 0.95rem; margin-bottom: 4px; color: #1e293b; }
+        .item-info p { font-size: 0.75rem; color: #64748b; }
+        .item-amount { text-align: right; }
+        .amount-val { color: var(--primary); font-weight: 700; margin-bottom: 5px; }
+        .btn-edit { font-size: 0.8rem; color: #6366f1; text-decoration: none; font-weight: 600; }
+
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html" class="btn-back"><i class="fas fa-chevron-left"></i></a>
+        <h2 style="font-weight: 700;">Daftar Piutang</h2>
+    </div>
+
+    <div class="summary-card">
+        <p style="font-size: 0.85rem; opacity: 0.9;">Total Piutang (Uang di Orang)</p>
+        <h2 id="totalDisplay">Rp 0</h2>
+        <button class="btn-delete-all" onclick="hapusSemua()">
+            <i class="fas fa-trash-alt"></i> Hapus Semua Piutang
+        </button>
+    </div>
+
+    <div id="listPiutang" class="list-container">
+        <div class="empty-state">Memuat data...</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loadData(user.uid);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        async function loadData(uid) {
+            const listDiv = document.getElementById('listPiutang');
+            const totalDiv = document.getElementById('totalDisplay');
+
+            try {
+                // Filter berdasarkan ID User dan Tipe "piutang"
+                const q = query(
+                    collection(db, "transaksi"), 
+                    where("userId", "==", uid), 
+                    where("type", "==", "piutang")
+                );
+
+                const querySnapshot = await getDocs(q);
+                let total = 0;
+                let html = "";
+
+                if (querySnapshot.empty) {
+                    listDiv.innerHTML = '<div class="empty-state">Tidak ada catatan piutang.</div>';
+                    totalDiv.innerText = "Rp 0";
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const d = doc.data();
+                    total += d.amount;
+                    const tgl = d.createdAt ? d.createdAt.toDate().toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : '-';
+
+                    html += `
+                        <div class="item-card">
+                            <div class="item-info">
+                                <h4>${d.note}</h4>
+                                <p><i class="far fa-calendar-alt"></i> ${tgl}</p>
+                            </div>
+                            <div class="item-amount">
+                                <div class="amount-val">- Rp ${d.amount.toLocaleString('id-ID')}</div>
+                                <a href="tambah_catatan.html?id=${doc.id}" class="btn-edit">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                listDiv.innerHTML = html;
+                totalDiv.innerText = "Rp " + total.toLocaleString('id-ID');
+
+            } catch (err) {
+                console.error(err);
+                listDiv.innerHTML = '<div class="empty-state">Gagal mengambil data.</div>';
+            }
+        }
+
+        window.hapusSemua = async () => {
+            if(confirm("Hapus semua catatan piutang? Tindakan ini permanen.")) {
+                const uid = auth.currentUser.uid;
+                const q = query(collection(db, "transaksi"), where("userId", "==", uid), where("type", "==", "piutang"));
+                const snap = await getDocs(q);
+                
+                const batch = writeBatch(db);
+                snap.forEach(doc => batch.delete(doc.ref));
+
+                await batch.commit();
+                alert("Semua piutang telah dihapus.");
+                location.reload();
+            }
+        };
+    </script>
+</body>
+</html>
