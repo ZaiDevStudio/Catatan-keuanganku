@@ -1,0 +1,23 @@
+{
+  "name": "Catatan Keuangan Ku",
+  "short_name": "FinanceApp",
+  "description": "Aplikasi Pencatat Keuangan Pribadi",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#4f46e5",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "catatan.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "catatan.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Riwayat Pinjaman</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --warning: #f59e0b; --bg: #f8fafc; --white: #ffffff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg); padding-bottom: 100px; }
+        .nav-top { background: var(--white); padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 100; }
+        .nav-top h1 { font-size: 16px; font-weight: 800; }
+        .container { padding: 20px; }
+        .card-item { background: var(--white); padding: 16px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--warning); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .card-info h3 { font-size: 14px; font-weight: 700; color: #1e293b; }
+        .card-info p { font-size: 11px; color: #64748b; margin-bottom: 4px; }
+        .card-amount { font-size: 15px; font-weight: 800; color: var(--warning); }
+        .btn-del { color: #b45309; border: none; background: #fef3c7; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); display: flex; justify-content: space-around; padding: 12px 0 25px 0; box-shadow: 0 -8px 25px rgba(0,0,0,0.05); border-top-left-radius: 30px; border-top-right-radius: 30px; }
+        .nav-item { text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; font-size: 9px; font-weight: 800; }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <nav class="nav-top"><a href="index.html" style="color:#4f46e5"><i class="fas fa-arrow-left"></i></a><h1>Riwayat Pinjaman (Utang)</h1><div style="width:20px"></div></nav>
+    <div class="container" id="listData"><p style="text-align:center; padding:20px;">Memuat data...</p></div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item"><i class="fas fa-th-large"></i><span>BERANDA</span></a>
+        <a href="saldo.html" class="nav-item"><i class="fas fa-wallet"></i><span>SALDO</span></a>
+        <a href="statistik.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>LAPORAN</span></a>
+        <a href="tentang.html" class="nav-item"><i class="fas fa-user-circle"></i><span>INFO</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) { loadData(user.uid); } else { window.location.href = "login.html"; }
+        });
+
+        async function loadData(uid) {
+            const container = document.getElementById('listData');
+            const q = query(collection(db, "catatan"), where("userId", "==", uid), where("tipe", "==", "pinjaman"));
+            try {
+                const snap = await getDocs(q);
+                container.innerHTML = "";
+                if (snap.empty) { container.innerHTML = "<p style='text-align:center; padding:40px;'>Tidak ada data pinjaman.</p>"; return; }
+                snap.forEach((r) => {
+                    const d = r.data();
+                    container.innerHTML += `<div class="card-item"><div class="card-info"><p>${d.tanggal}</p><h3>${d.keterangan}</h3><div class="card-amount">Rp ${d.jumlah.toLocaleString('id-ID')}</div></div><button onclick="hapus('${r.id}')" class="btn-del"><i class="fas fa-trash-alt"></i></button></div>`;
+                });
+            } catch (e) { container.innerHTML = "Gagal memuat data."; }
+        }
+        window.hapus = async (id) => { if(confirm("Hapus catatan ini?")) { await deleteDoc(doc(db, "catatan", id)); location.reload(); } }
+    </script>
+</body>
+</html>
