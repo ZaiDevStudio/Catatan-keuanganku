@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <title>Dashboard - FinanceApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+
+<link rel="apple-touch-icon" href="catatan.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --text-main: #1e293b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg); padding-bottom: 120px; color: var(--text-main); }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            padding: 40px 25px 60px;
+            color: white;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .user-info h2 { font-size: 20px; font-weight: 800; }
+        .user-info p { font-size: 13px; opacity: 0.8; }
+
+        .btn-logout-top {
+            background: rgba(255, 255, 255, 0.2);
+            border: none; width: 40px; height: 40px; border-radius: 12px;
+            color: white; cursor: pointer; backdrop-filter: blur(10px);
+        }
+
+        /* Menu Grid */
+        .container { padding: 0 20px; margin-top: -30px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+        .menu-card {
+            background: var(--white); padding: 25px 15px; border-radius: 28px;
+            display: flex; flex-direction: column; align-items: center;
+            text-decoration: none; box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        }
+
+        .icon-box {
+            width: 55px; height: 55px; border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-bottom: 12px;
+        }
+
+        .menu-card span { font-size: 13px; font-weight: 800; color: var(--text-main); }
+
+        /* --- TOMBOL TAMBAH MELAYANG (FAB) --- */
+        .fab-add {
+            position: fixed;
+            bottom: 85px; /* Di atas bottom nav */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+            text-decoration: none;
+            z-index: 1001;
+            border: 5px solid var(--bg); /* Memberi kesan terpisah */
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--white); display: flex; justify-content: space-around;
+            padding: 12px 0 25px 0; box-shadow: 0 -8px 25px rgba(0,0,0,0.05);
+            border-top-left-radius: 30px; border-top-right-radius: 30px; z-index: 1000;
+        }
+        .nav-item { text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; width: 20%; }
+        .nav-item i { font-size: 20px; margin-bottom: 5px; }
+        .nav-item span { font-size: 9px; font-weight: 800; text-transform: uppercase; }
+        .nav-item.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="user-info">
+            <p>Halo, Selamat Datang</p>
+            <h2 id="userName">Memuat...</h2>
+        </div>
+        <button class="btn-logout-top" id="btnLogout"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+
+    <div class="container">
+        <div class="menu-grid">
+            <a href="pemasukan.html" class="menu-card">
+                <div class="icon-box" style="background: #ecfdf5; color: #10b981;"><i class="fas fa-arrow-down"></i></div>
+                <span>Pemasukan</span>
+            </a>
+            <a href="pengeluaran.html" class="menu-card">
+                <div class="icon-box" style="background: #fef2f2; color: #ef4444;"><i class="fas fa-arrow-up"></i></div>
+                <span>Pengeluaran</span>
+            </a>
+            <a href="pinjaman.html" class="menu-card">
+                <div class="icon-box" style="background: #fffbeb; color: #f59e0b;"><i class="fas fa-hand-holding-usd"></i></div>
+                <span>Pinjaman</span>
+            </a>
+            <a href="piutang.html" class="menu-card">
+                <div class="icon-box" style="background: #f5f3ff; color: #8b5cf6;"><i class="fas fa-comments-dollar"></i></div>
+                <span>Piutang</span>
+            </a>
+        </div>
+    </div>
+
+    <a href="tambah_catatan.html" class="fab-add">
+        <i class="fas fa-plus"></i>
+    </a>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item active"><i class="fas fa-th-large"></i><span>Beranda</span></a>
+        <a href="saldo.html" class="nav-item"><i class="fas fa-wallet"></i><span>Saldo</span></a>
+        <div style="width: 20%;"></div> <a href="statistik.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Laporan</span></a>
+        <a href="tentang.html" class="nav-item"><i class="fas fa-user-circle"></i><span>Info</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('userName').innerText = user.displayName || user.email.split('@')[0];
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        document.getElementById('btnLogout').onclick = async () => {
+            if (confirm("Keluar dari akun?")) {
+                await signOut(auth);
+                window.location.href = "login.html";
+            }
+        };
+    </script>
+</body>
+</html>

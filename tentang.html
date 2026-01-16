@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <title>Info Aplikasi - FinanceApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+
+<link rel="apple-touch-icon" href="catatan.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg); padding-bottom: 100px; color: var(--text-main); }
+
+        .nav-top {
+            background: var(--white); padding: 18px 20px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 100;
+        }
+        .nav-top h1 { font-size: 16px; font-weight: 800; }
+
+        .container { padding: 30px 20px; text-align: center; }
+
+        /* Profile Section */
+        .profile-img {
+            width: 120px; height: 120px; border-radius: 40px;
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 50px; box-shadow: 0 15px 30px rgba(79, 70, 229, 0.2);
+        }
+
+        .dev-name { font-size: 20px; font-weight: 800; color: var(--text-main); }
+        .dev-title { font-size: 13px; color: var(--primary); font-weight: 700; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .info-card {
+            background: var(--white); border-radius: 25px; padding: 20px;
+            margin-top: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.03); text-align: left;
+        }
+
+        .info-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px solid #f1f5f9;
+        }
+        .info-item:last-child { border-bottom: none; }
+        .info-item label { font-size: 13px; color: var(--text-sub); font-weight: 600; }
+        .info-item span { font-size: 13px; color: var(--text-main); font-weight: 700; }
+
+        .btn-logout {
+            margin-top: 30px; width: 100%; padding: 16px; border-radius: 18px;
+            background: #fef2f2; color: #ef4444; border: none;
+            font-weight: 800; font-size: 14px; cursor: pointer;
+            transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--white); display: flex; justify-content: space-around;
+            padding: 12px 0 20px 0; box-shadow: 0 -8px 25px rgba(0,0,0,0.05);
+            border-top-left-radius: 30px; border-top-right-radius: 30px;
+        }
+        .nav-item { text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; width: 20%; }
+        .nav-item i { font-size: 22px; margin-bottom: 5px; }
+        .nav-item span { font-size: 9px; font-weight: 800; text-transform: uppercase; }
+        .nav-item.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+    <nav class="nav-top"><h1>Informasi Pengembang</h1></nav>
+
+    <div class="container">
+        <div class="profile-img">
+            <i class="fas fa-user-tie"></i>
+        </div>
+        
+        <h2 class="dev-name">Yeriyuma Zai, A.Md.Kom</h2>
+        <p class="dev-title">Fullstack Developer</p>
+
+        <div class="info-card">
+            <div class="info-item">
+                <label>Nama Aplikasi</label>
+                <span>Catatan Keuangan</span>
+            </div>
+            <div class="info-item">
+                <label>Versi</label>
+                <span>2.0.1 (Stable)</span>
+            </div>
+            <div class="info-item">
+                <label>Email Pengguna</label>
+                <span id="userEmail">Memuat...</span>
+            </div>
+            <div class="info-item">
+                <label>Update Terakhir</label>
+                <span>Januari 2026</span>
+            </div>
+        </div>
+
+        <button class="btn-logout" id="btnLogout">
+            <i class="fas fa-sign-out-alt"></i> Keluar dari Akun
+        </button>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item"><i class="fas fa-th-large"></i><span>Beranda</span></a>
+        <a href="tambah_catatan.html" class="nav-item"><i class="fas fa-plus-circle"></i><span>Tambah</span></a>
+        <a href="saldo.html" class="nav-item"><i class="fas fa-wallet"></i><span>Saldo</span></a>
+        <a href="statistik.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Laporan</span></a>
+        <a href="tentang.html" class="nav-item active"><i class="fas fa-user-circle"></i><span>Info</span></a>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('userEmail').innerText = user.email;
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        document.getElementById('btnLogout').onclick = async () => {
+            if (confirm("Apakah Anda yakin ingin keluar?")) {
+                try {
+                    await signOut(auth);
+                    window.location.href = "login.html";
+                } catch (error) {
+                    alert("Gagal keluar: " + error.message);
+                }
+            }
+        };
+    </script>
+</body>
+</html>

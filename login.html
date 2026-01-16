@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <title>Login - FinanceApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+
+<link rel="apple-touch-icon" href="catatan.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --bg: #4f46e5; /* Background biru seperti screenshot */
+            --white: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+        }
+
+        body { 
+            background: var(--bg); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+
+        .auth-card { 
+            background: var(--white); 
+            width: 100%; 
+            max-width: 400px; 
+            padding: 40px 30px; 
+            border-radius: 40px; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); 
+            text-align: center;
+            position: relative;
+        }
+
+        .logo-container {
+            margin-bottom: 25px;
+        }
+
+        .logo-container img { 
+            width: 110px; 
+            height: auto;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+        }
+
+        h2 { 
+            color: var(--text-main); 
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 30px; 
+        }
+
+        .input-box { 
+            position: relative; 
+            margin-bottom: 20px; 
+            text-align: left; 
+        }
+
+        .input-box label { 
+            font-size: 11px; 
+            font-weight: 800; 
+            color: var(--text-sub); 
+            text-transform: uppercase; 
+            margin-bottom: 8px;
+            display: block;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i.prefix-icon { 
+            position: absolute; 
+            left: 16px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: var(--text-sub); 
+            font-size: 16px;
+        }
+
+        .input-box input { 
+            width: 100%; 
+            padding: 15px 15px 15px 48px; 
+            border: 1.5px solid #f1f5f9; 
+            background: #f8fafc;
+            border-radius: 16px; 
+            outline: none; 
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .input-box input:focus { 
+            border-color: var(--primary); 
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .show-pass { 
+            position: absolute; 
+            right: 16px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: var(--text-sub); 
+            cursor: pointer; 
+            padding: 5px;
+        }
+
+        .btn-auth { 
+            width: 100%; 
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); 
+            color: white; 
+            padding: 18px; 
+            border: none; 
+            border-radius: 18px; 
+            font-weight: 800; 
+            font-size: 16px;
+            margin-top: 15px; 
+            cursor: pointer; 
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-auth:active { 
+            transform: scale(0.97); 
+        }
+
+        .switch-auth { 
+            background: none; 
+            border: none; 
+            color: var(--primary); 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin-top: 25px; 
+            font-size: 14px; 
+        }
+
+        .hidden { display: none; }
+
+        /* Animasi masuk */
+        .auth-card {
+            animation: slideUp 0.6s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="logo-container">
+            <img src="catatan.png" alt="Finance Logo">
+        </div>
+        
+        <h2 id="title">Selamat Datang</h2>
+        
+        <form id="authForm">
+            <div id="nameField" class="input-box hidden">
+                <label>Nama Lengkap</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user prefix-icon"></i>
+                    <input type="text" id="name" placeholder="Masukkan nama Anda">
+                </div>
+            </div>
+
+            <div class="input-box">
+                <label>Email Gmail</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope prefix-icon"></i>
+                    <input type="email" id="email" placeholder="email@gmail.com" required>
+                </div>
+            </div>
+
+            <div class="input-box">
+                <label>Kata Sandi</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock prefix-icon"></i>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                    <i class="fas fa-eye show-pass" id="togglePass"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-auth" id="btnText">Masuk</button>
+        </form>
+
+        <button class="switch-auth" id="switchAuth">Belum punya akun? Daftar</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        let isLogin = true;
+
+        // Toggle Lihat Password
+        document.getElementById('togglePass').onclick = function() {
+            const p = document.getElementById('password');
+            if (p.type === 'password') {
+                p.type = 'text';
+                this.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                p.type = 'password';
+                this.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        };
+
+        // Toggle Login / Daftar
+        document.getElementById('switchAuth').onclick = () => {
+            isLogin = !isLogin;
+            document.getElementById('nameField').classList.toggle('hidden');
+            document.getElementById('title').innerText = isLogin ? 'Selamat Datang' : 'Buat Akun';
+            document.getElementById('btnText').innerText = isLogin ? 'Masuk' : 'Daftar';
+            document.getElementById('switchAuth').innerText = isLogin ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk';
+        };
+
+        // Proses Submit
+        document.getElementById('authForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            const btn = document.getElementById('btnText');
+
+            btn.innerText = "Memproses...";
+            btn.disabled = true;
+
+            try {
+                if (isLogin) {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } else {
+                    const res = await createUserWithEmailAndPassword(auth, email, pass);
+                    await updateProfile(res.user, { 
+                        displayName: document.getElementById('name').value 
+                    });
+                }
+                window.location.href = 'index.html';
+            } catch (err) { 
+                alert("Kesalahan: " + err.message); 
+                btn.innerText = isLogin ? "Masuk" : "Daftar";
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>

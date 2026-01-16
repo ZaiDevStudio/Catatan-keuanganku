@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#8b5cf6">
+    <title>Catatan Piutang - FinanceApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+
+<link rel="apple-touch-icon" href="catatan.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --purple: #8b5cf6;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body { background-color: var(--bg); padding-bottom: 100px; color: var(--text-main); }
+
+        .nav-top {
+            background: var(--white);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-top a { color: var(--primary); text-decoration: none; font-size: 18px; }
+        .nav-top h1 { font-size: 16px; font-weight: 800; }
+        .btn-clear-all { color: #ef4444; font-size: 12px; font-weight: 800; border: none; background: none; cursor: pointer; text-transform: uppercase; }
+
+        .container { padding: 20px; }
+
+        .card-item {
+            background: var(--white);
+            padding: 16px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.02);
+            border-left: 6px solid var(--purple); 
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-info h3 { font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+        .card-info p { font-size: 11px; color: var(--text-sub); font-weight: 600; }
+        .card-amount { font-size: 16px; font-weight: 800; color: var(--purple); margin-top: 6px; }
+
+        .btn-delete {
+            width: 38px; height: 38px; border-radius: 12px;
+            background: #f5f3ff; color: var(--purple);
+            display: flex; align-items: center; justify-content: center; border: none; cursor: pointer;
+        }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-sub); }
+        .empty-state i { font-size: 50px; margin-bottom: 15px; opacity: 0.2; color: var(--purple); }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--white); display: flex; justify-content: space-around;
+            padding: 12px 0 20px 0; box-shadow: 0 -8px 25px rgba(0,0,0,0.05);
+            border-top-left-radius: 30px; border-top-right-radius: 30px; z-index: 1000;
+        }
+
+        .nav-item { text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; width: 20%; }
+        .nav-item i { font-size: 22px; margin-bottom: 5px; }
+        .nav-item span { font-size: 9px; font-weight: 800; text-transform: uppercase; }
+        .nav-item.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-top">
+        <a href="index.html"><i class="fas fa-arrow-left"></i></a>
+        <h1>Catatan Piutang</h1>
+        <button class="btn-clear-all" id="btnHapusSemua">Hapus Semua</button>
+    </nav>
+
+    <div class="container" id="listPiutang">
+        <div class="empty-state">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <p>Memuat data piutang...</p>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item active"><i class="fas fa-th-large"></i><span>Beranda</span></a>
+        <a href="tambah_catatan.html" class="nav-item"><i class="fas fa-plus-circle"></i><span>Tambah</span></a>
+        <a href="saldo.html" class="nav-item"><i class="fas fa-wallet"></i><span>Saldo</span></a>
+        <a href="statistik.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Laporan</span></a>
+        <a href="tentang.html" class="nav-item"><i class="fas fa-user-circle"></i><span>Info</span></a>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) { loadPiutang(user.uid); } 
+            else { window.location.href = "login.html"; }
+        });
+
+        async function loadPiutang(userId) {
+            const container = document.getElementById('listPiutang');
+            const q = query(collection(db, "catatan"), where("userId", "==", userId), where("tipe", "==", "piutang"));
+
+            try {
+                const querySnapshot = await getDocs(q);
+                container.innerHTML = "";
+                if (querySnapshot.empty) {
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-comments-dollar"></i><p>Belum ada data piutang.</p></div>`;
+                    return;
+                }
+                querySnapshot.forEach((record) => {
+                    const data = record.data();
+                    const id = record.id;
+                    container.innerHTML += `
+                        <div class="card-item">
+                            <div class="card-info">
+                                <p><i class="far fa-calendar-alt"></i> ${data.tanggal}</p>
+                                <h3>${data.keterangan}</h3>
+                                <div class="card-amount">Rp ${data.jumlah.toLocaleString('id-ID')}</div>
+                            </div>
+                            <button onclick="hapusSatu('${id}')" class="btn-delete"><i class="fas fa-trash-alt"></i></button>
+                        </div>`;
+                });
+            } catch (error) { container.innerHTML = `<p style='text-align:center; color:red;'>Gagal memuat data.</p>`; }
+        }
+
+        window.hapusSatu = async (id) => {
+            if(confirm("Hapus piutang ini?")) {
+                await deleteDoc(doc(db, "catatan", id));
+                location.reload();
+            }
+        };
+
+        document.getElementById('btnHapusSemua').onclick = async () => {
+            if(confirm("Hapus SEMUA data piutang?")) {
+                const q = query(collection(db, "catatan"), where("userId", "==", auth.currentUser.uid), where("tipe", "==", "piutang"));
+                const snap = await getDocs(q);
+                await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "catatan", d.id))));
+                location.reload();
+            }
+        };
+    </script>
+</body>
+</html>

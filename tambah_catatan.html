@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <title>Tambah Catatan - FinanceApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+
+<link rel="apple-touch-icon" href="catatan.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg); padding-bottom: 100px; color: var(--text-main); }
+
+        .nav-top {
+            background: var(--white); padding: 18px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 100;
+        }
+        .nav-top a { color: var(--primary); text-decoration: none; font-size: 18px; }
+        .nav-top h1 { font-size: 16px; font-weight: 800; }
+
+        .container { padding: 25px 20px; }
+
+        .form-card {
+            background: var(--white); padding: 25px; border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+        
+        .input-group input, .input-group select {
+            width: 100%; padding: 14px 18px; border-radius: 16px;
+            border: 1.5px solid #f1f5f9; background: #f8fafc;
+            font-size: 14px; font-weight: 600; outline: none; transition: 0.3s;
+        }
+
+        .input-group input:focus { border-color: var(--primary); background: white; }
+
+        .btn-save {
+            width: 100%; background: linear-gradient(135deg, var(--primary), #7c3aed);
+            color: white; padding: 18px; border: none; border-radius: 20px;
+            font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 10px;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--white); display: flex; justify-content: space-around;
+            padding: 12px 0 20px 0; box-shadow: 0 -8px 25px rgba(0,0,0,0.05);
+            border-top-left-radius: 30px; border-top-right-radius: 30px;
+        }
+        .nav-item { text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; width: 20%; }
+        .nav-item i { font-size: 22px; margin-bottom: 5px; }
+        .nav-item span { font-size: 9px; font-weight: 800; text-transform: uppercase; }
+        .nav-item.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-top">
+        <a href="index.html"><i class="fas fa-arrow-left"></i></a>
+        <h1>Tambah Transaksi</h1>
+        <div style="width: 20px;"></div>
+    </nav>
+
+    <div class="container">
+        <div class="form-card">
+            <form id="formTambah">
+                <div class="input-group">
+                    <label>Tipe Transaksi</label>
+                    <select id="tipe" required>
+                        <option value="pemasukan">Pemasukan (+)</option>
+                        <option value="pengeluaran">Pengeluaran (-)</option>
+                        <option value="pinjaman">Pinjaman (Utang)</option>
+                        <option value="piutang">Piutang (Uang di Orang)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Jumlah Uang (Rp)</label>
+                    <input type="number" id="jumlah" placeholder="Contoh: 50000" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Keterangan</label>
+                    <input type="text" id="keterangan" placeholder="Beli apa / Dari siapa?" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Tanggal</label>
+                    <input type="date" id="tanggal" required>
+                </div>
+
+                <button type="submit" class="btn-save" id="btnSimpan">Simpan Catatan</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item"><i class="fas fa-th-large"></i><span>Beranda</span></a>
+        <a href="tambah_catatan.html" class="nav-item active"><i class="fas fa-plus-circle"></i><span>Tambah</span></a>
+        <a href="saldo.html" class="nav-item"><i class="fas fa-wallet"></i><span>Saldo</span></a>
+        <a href="statistik.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Laporan</span></a>
+        <a href="tentang.html" class="nav-item"><i class="fas fa-user-circle"></i><span>Info</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Set tanggal hari ini secara otomatis
+        document.getElementById('tanggal').valueAsDate = new Date();
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = "login.html";
+        });
+
+        document.getElementById('formTambah').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSimpan');
+            btn.innerText = "Menyimpan...";
+            btn.disabled = true;
+
+            const data = {
+                userId: auth.currentUser.uid,
+                tipe: document.getElementById('tipe').value,
+                jumlah: Number(document.getElementById('jumlah').value),
+                keterangan: document.getElementById('keterangan').value,
+                tanggal: document.getElementById('tanggal').value
+            };
+
+            try {
+                await addDoc(collection(db, "catatan"), data);
+                alert("Berhasil disimpan!");
+                window.location.href = "index.html";
+            } catch (error) {
+                alert("Gagal: " + error.message);
+                btn.innerText = "Simpan Catatan";
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
