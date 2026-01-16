@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tambah Catatan - FinanceApp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body { 
+            background-color: var(--bg); 
+            color: var(--text-main); 
+            padding-bottom: 100px; /* Ruang untuk Bottom Nav */
+        }
+
+        /* Navigation Top */
+        .nav-top {
+            background: var(--white);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-top a { color: var(--primary); text-decoration: none; font-weight: 700; font-size: 14px; }
+        .nav-top h1 { flex: 1; text-align: center; font-size: 16px; font-weight: 800; margin-right: 40px; }
+
+        /* Form Container */
+        .container { padding: 20px; max-width: 500px; margin: 0 auto; }
+
+        .form-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            margin-bottom: 25px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .input-group { margin-bottom: 25px; }
+        .input-group label { 
+            display: block; 
+            font-size: 11px; 
+            font-weight: 800; 
+            color: var(--text-sub); 
+            text-transform: uppercase; 
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 0;
+            border: none;
+            border-bottom: 2.5px solid #f1f5f9;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            outline: none;
+            background: transparent;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus { border-color: var(--primary); }
+        .input-group input#jumlah { font-size: 28px; color: var(--primary); font-weight: 800; }
+
+        /* Button Simpan */
+        .btn-save {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            color: white;
+            padding: 18px;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .btn-save:active { transform: scale(0.96); }
+
+        /* Navigasi Bawah */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            border-top-left-radius: 25px;
+            border-top-right-radius: 25px;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #94a3b8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            transition: 0.3s;
+        }
+
+        .nav-item i { font-size: 20px; }
+        .nav-item span { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .nav-item.active { color: var(--primary); }
+
+        /* Loader */
+        .spinner { animation: rotate 1s linear infinite; display: none; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-top">
+        <a href="index.html"><i class="fas fa-chevron-left"></i></a>
+        <h1>Catatan Baru</h1>
+    </nav>
+
+    <div class="container">
+        <form id="formCatatan">
+            <div class="form-card">
+                <div class="input-group">
+                    <label>Kategori</label>
+                    <select id="tipe" required>
+                        <option value="pemasukan">Pemasukan (+)</option>
+                        <option value="pengeluaran">Pengeluaran (-)</option>
+                        <option value="pinjaman">Pinjaman (Utang Kita)</option>
+                        <option value="piutang">Piutang (Orang Utang)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Nominal (Rp)</label>
+                    <input type="number" id="jumlah" placeholder="0" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Tanggal Transaksi</label>
+                    <input type="date" id="tanggal" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Keterangan / Deskripsi</label>
+                    <input type="text" id="keterangan" placeholder="Contoh: Beli Makan Malam" required>
+                </div>
+            </div>
+
+            <button type="submit" id="btnSimpan" class="btn-save">
+                <i class="fas fa-check-circle"></i>
+                <span>Simpan Sekarang</span>
+                <i class="fas fa-circle-notch spinner" id="loader"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i><span>Beranda</span></a>
+        <a href="tambah_catatan.html" class="nav-item active"><i class="fas fa-plus-circle"></i><span>Tambah</span></a>
+        <a href="saldo.html" class="nav-item"><i class="fas fa-wallet"></i><span>Saldo</span></a>
+        <a href="statistik.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Laporan</span></a>
+        <a href="tentang.html" class="nav-item"><i class="fas fa-info-circle"></i><span>Info</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Konfigurasi Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let userSession = null;
+
+        // Cek Login
+        onAuthStateChanged(auth, (user) => {
+            if (user) { 
+                userSession = user; 
+            } else { 
+                window.location.href = "login.html"; 
+            }
+        });
+
+        // Default tanggal hari ini
+        document.getElementById('tanggal').valueAsDate = new Date();
+
+        // Submit Data
+        document.getElementById('formCatatan').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btnSimpan');
+            const loader = document.getElementById('loader');
+            
+            btn.disabled = true;
+            loader.style.display = "inline-block";
+
+            try {
+                await addDoc(collection(db, "catatan"), {
+                    userId: userSession.uid,
+                    tipe: document.getElementById('tipe').value,
+                    jumlah: Number(document.getElementById('jumlah').value),
+                    tanggal: document.getElementById('tanggal').value,
+                    keterangan: document.getElementById('keterangan').value,
+                    createdAt: serverTimestamp()
+                });
+
+                alert('✅ Data berhasil disimpan!');
+                window.location.href = "index.html";
+            } catch (err) {
+                alert('❌ Gagal: ' + err.message);
+                btn.disabled = false;
+                loader.style.display = "none";
+            }
+        };
+    </script>
+</body>
+</html>

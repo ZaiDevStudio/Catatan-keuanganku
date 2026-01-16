@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Daftar Pinjaman - FinanceApp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --warning: #f59e0b; /* Warna Orange untuk Pinjaman */
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body { background-color: var(--bg); padding-bottom: 100px; }
+
+        /* Top Navigation */
+        .nav-top {
+            background: var(--white);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-top a { color: var(--primary); text-decoration: none; font-weight: 700; }
+        .nav-top h1 { font-size: 16px; font-weight: 800; color: #1e293b; }
+        .btn-clear-all { color: var(--danger); font-size: 12px; font-weight: 700; border: none; background: none; cursor: pointer; }
+
+        /* List Container */
+        .container { padding: 20px; }
+
+        .card-item {
+            background: var(--white);
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border-left: 5px solid var(--warning);
+        }
+
+        .card-info h3 { font-size: 15px; color: #1e293b; margin-bottom: 2px; }
+        .card-info p { font-size: 11px; color: #94a3b8; font-weight: 600; }
+        .card-amount { font-size: 16px; font-weight: 800; color: var(--warning); margin-top: 5px; }
+
+        .card-actions { display: flex; gap: 10px; }
+        .btn-action {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-delete { background: #fffbeb; color: var(--warning); }
+        .btn-action:active { transform: scale(0.9); }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 50px; margin-bottom: 15px; opacity: 0.3; }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            border-top-left-radius: 25px;
+            border-top-right-radius: 25px;
+            z-index: 1000;
+        }
+
+        .nav-item { text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .nav-item i { font-size: 20px; }
+        .nav-item span { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .nav-item.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-top">
+        <a href="index.html"><i class="fas fa-chevron-left"></i></a>
+        <h1>Catatan Pinjaman</h1>
+        <button class="btn-clear-all" id="btnHapusSemua">Hapus Semua</button>
+    </nav>
+
+    <div class="container" id="listPinjaman">
+        <div class="empty-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Memuat data...</p>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i><span>Beranda</span></a>
+        <a href="tambah_catatan.html" class="nav-item"><i class="fas fa-plus-circle"></i><span>Tambah</span></a>
+        <a href="saldo.html" class="nav-item"><i class="fas fa-wallet"></i><span>Saldo</span></a>
+        <a href="statistik.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Laporan</span></a>
+        <a href="tentang.html" class="nav-item"><i class="fas fa-info-circle"></i><span>Info</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, deleteDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) { loadPinjaman(user.uid); } 
+            else { window.location.href = "login.html"; }
+        });
+
+        async function loadPinjaman(userId) {
+            const container = document.getElementById('listPinjaman');
+            const q = query(
+                collection(db, "catatan"), 
+                where("userId", "==", userId), 
+                where("tipe", "==", "pinjaman"),
+                orderBy("tanggal", "desc")
+            );
+
+            try {
+                const querySnapshot = await getDocs(q);
+                container.innerHTML = "";
+
+                if (querySnapshot.empty) {
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-hand-holding-usd"></i><p>Tidak ada catatan pinjaman.</p></div>`;
+                    return;
+                }
+
+                querySnapshot.forEach((record) => {
+                    const data = record.data();
+                    const id = record.id;
+                    container.innerHTML += `
+                        <div class="card-item">
+                            <div class="card-info">
+                                <p>${data.tanggal}</p>
+                                <h3>${data.keterangan}</h3>
+                                <div class="card-amount">Rp ${data.jumlah.toLocaleString('id-ID')}</div>
+                            </div>
+                            <div class="card-actions">
+                                <button onclick="hapusSatu('${id}')" class="btn-action btn-delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>`;
+                });
+            } catch (error) {
+                container.innerHTML = "<p style='text-align:center; color:red;'>Gagal memuat data.</p>";
+            }
+        }
+
+        window.hapusSatu = async (id) => {
+            if(confirm("Hapus catatan pinjaman ini?")) {
+                await deleteDoc(doc(db, "catatan", id));
+                location.reload();
+            }
+        };
+
+        document.getElementById('btnHapusSemua').onclick = async () => {
+            if(confirm("Hapus SEMUA data pinjaman?")) {
+                const q = query(collection(db, "catatan"), where("userId", "==", auth.currentUser.uid), where("tipe", "==", "pinjaman"));
+                const snap = await getDocs(q);
+                await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "catatan", d.id))));
+                location.reload();
+            }
+        };
+    </script>
+</body>
+</html>

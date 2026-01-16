@@ -1,43 +1,40 @@
-// CONFIGURATION - Ganti dengan milikmu!
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 const firebaseConfig = {
-    apiKey: "AIzaSy...",
-    authDomain: "proyekmu.firebaseapp.com",
-    databaseURL: "https://proyekmu-default-rtdb.firebaseio.com",
-    projectId: "proyekmu",
-    storageBucket: "proyekmu.appspot.com",
-    messagingSenderId: "12345678",
-    appId: "1:123456:web:abcd"
+  apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+  authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+  projectId: "catatan-keuanganku-602cf",
+  // ... sisa config Anda
 };
 
-// Inisialisasi
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-// Fungsi Simpan
-function simpanCatatan(kategori, jumlah, keterangan) {
-    db.ref('catatan').push({
-        kategori,
-        jumlah: parseInt(jumlah),
-        keterangan,
-        tanggal: new Date().toISOString()
-    }).then(() => {
-        alert("Berhasil disimpan!");
-        window.location.href = 'index.html';
+// Fungsi hitung saldo otomatis
+async function updateSaldo(userId) {
+    const q = query(collection(db, "catatan"), where("userId", "==", userId));
+    const querySnapshot = await getDocs(q);
+    let total = 0;
+    
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const amt = parseFloat(data.jumlah);
+        if(data.tipe === 'pemasukan' || data.tipe === 'pinjaman') total += amt;
+        else if(data.tipe === 'pengeluaran' || data.tipe === 'piutang') total -= amt;
     });
+
+    document.getElementById('totalSaldo').innerText = `Rp ${total.toLocaleString('id-ID')}`;
 }
 
-// Rumus Saldo: (Pemasukan - Pengeluaran + Pinjaman - Piutang)
-function hitungSaldo() {
-    db.ref('catatan').on('value', (snapshot) => {
-        let total = 0;
-        snapshot.forEach((child) => {
-            const data = child.val();
-            if (data.kategori === 'pemasukan') total += data.jumlah;
-            if (data.kategori === 'pengeluaran') total -= data.jumlah;
-            if (data.kategori === 'pinjaman') total += data.jumlah;
-            if (data.kategori === 'piutang') total -= data.jumlah;
-        });
-        const el = document.getElementById('totalSaldo');
-        if(el) el.innerText = "Rp " + total.toLocaleString('id-ID');
-    });
-}
+// Proteksi Halaman
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        updateSaldo(user.uid);
+        document.getElementById('userName').innerText = user.displayName || user.email;
+    } else {
+        window.location.href = "login.html";
+    }
+});
