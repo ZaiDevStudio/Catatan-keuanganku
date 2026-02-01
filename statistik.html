@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Statistik Keuangan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #4f46e5; --bg: #f8fafc; --white: #ffffff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg); padding-bottom: 100px; }
+        
+        .nav-top { background: var(--white); padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 100; }
+        
+        .filter-container { background: white; padding: 20px; margin: 15px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .filter-group { margin-bottom: 15px; }
+        .filter-group label { font-size: 12px; font-weight: 800; color: #64748b; display: block; margin-bottom: 8px; }
+        .filter-row { display: flex; gap: 10px; }
+        
+        select, input[type="date"] { 
+            width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #f1f5f9; 
+            background: #f8fafc; font-size: 13px; outline: none; color: #1e293b;
+        }
+
+        .summary-card { padding: 20px; margin: 15px; border-radius: 25px; color: white; background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+        .summary-item { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .summary-item span { opacity: 0.8; font-size: 13px; }
+        .summary-item h2 { font-size: 18px; font-weight: 800; }
+
+        .btn-apply { 
+            width: 100%; padding: 15px; border-radius: 15px; border: none; 
+            background: var(--primary); color: white; font-weight: 800; cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); display: flex; justify-content: space-around; padding: 12px 0 25px 0; border-top-left-radius: 30px; border-top-right-radius: 30px; box-shadow: 0 -8px 25px rgba(0,0,0,0.05); }
+        .nav-item { text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; font-size: 9px; font-weight: 800; }
+        .nav-item.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+    <nav class="nav-top">
+        <a href="index.html" style="color:var(--primary)"><i class="fas fa-arrow-left"></i></a>
+        <h1>Laporan Statistik</h1>
+        <div style="width:20px"></div>
+    </nav>
+
+    <div class="filter-container">
+        <div class="filter-group">
+            <label>RENTANG TANGGAL (OPSIONAL)</label>
+            <div class="filter-row">
+                <input type="date" id="dateStart">
+                <input type="date" id="dateEnd">
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>BULAN & TAHUN</label>
+            <div class="filter-row">
+                <select id="filterMonth">
+                    <option value="all">Semua Bulan</option>
+                    <option value="01">Januari</option><option value="02">Februari</option>
+                    <option value="03">Maret</option><option value="04">April</option>
+                    <option value="05">Mei</option><option value="06">Juni</option>
+                    <option value="07">Juli</option><option value="08">Agustus</option>
+                    <option value="09">September</option><option value="10">Oktober</option>
+                    <option value="11">November</option><option value="12">Desember</option>
+                </select>
+                <select id="filterYear">
+                    <option value="all">Semua Tahun</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn-apply" id="btnFilter">Terapkan Filter</button>
+    </div>
+
+    <div class="summary-card" id="summaryView">
+        <div class="summary-item"><span>Pemasukan</span><h2 id="txtMasuk">Rp 0</h2></div>
+        <div class="summary-item"><span>Pengeluaran</span><h2 id="txtKeluar">Rp 0</h2></div>
+        <hr style="opacity:0.2; margin:15px 0;">
+        <div class="summary-item"><span>Saldo Periode Ini</span><h2 id="txtTotal" style="font-size:24px;">Rp 0</h2></div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item"><i class="fas fa-th-large"></i><span>BERANDA</span></a>
+        <a href="saldo.html" class="nav-item"><i class="fas fa-wallet"></i><span>SALDO</span></a>
+        <a href="statistik.html" class="nav-item active"><i class="fas fa-chart-pie"></i><span>LAPORAN</span></a>
+        <a href="tentang.html" class="nav-item"><i class="fas fa-user-circle"></i><span>INFO</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxo9okH0fKRF-QaEfm2jYv-CGPVnl3EJg",
+            authDomain: "catatan-keuanganku-602cf.firebaseapp.com",
+            projectId: "catatan-keuanganku-602cf",
+            storageBucket: "catatan-keuanganku-602cf.firebasestorage.app",
+            messagingSenderId: "160296493240",
+            appId: "1:160296493240:web:59faa4de1b4d5d0513944d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let allData = [];
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) { fetchData(user.uid); } 
+            else { window.location.href = "login.html"; }
+        });
+
+        async function fetchData(uid) {
+            const q = query(collection(db, "catatan"), where("userId", "==", uid));
+            const snap = await getDocs(q);
+            allData = [];
+            snap.forEach(doc => allData.push(doc.data()));
+            calculate();
+        }
+
+        function calculate() {
+            const m = document.getElementById('filterMonth').value;
+            const y = document.getElementById('filterYear').value;
+            const s = document.getElementById('dateStart').value;
+            const e = document.getElementById('dateEnd').value;
+
+            let totalMasuk = 0;
+            let totalKeluar = 0;
+
+            allData.forEach(d => {
+                const dDate = new Date(d.tanggal);
+                const dMonth = (dDate.getMonth() + 1).toString().padStart(2, '0');
+                const dYear = dDate.getFullYear().toString();
+
+                let match = true;
+
+                // Filter Rentang Tanggal
+                if (s && d.tanggal < s) match = false;
+                if (e && d.tanggal > e) match = false;
+                // Filter Bulan
+                if (m !== 'all' && dMonth !== m) match = false;
+                // Filter Tahun
+                if (y !== 'all' && dYear !== y) match = false;
+
+                if (match) {
+                    if (d.tipe === 'pemasukan') totalMasuk += Number(d.jumlah);
+                    if (d.tipe === 'pengeluaran') totalKeluar += Number(d.jumlah);
+                }
+            });
+
+            document.getElementById('txtMasuk').innerText = "Rp " + totalMasuk.toLocaleString('id-ID');
+            document.getElementById('txtKeluar').innerText = "Rp " + totalKeluar.toLocaleString('id-ID');
+            document.getElementById('txtTotal').innerText = "Rp " + (totalMasuk - totalKeluar).toLocaleString('id-ID');
+        }
+
+        document.getElementById('btnFilter').onclick = () => calculate();
+    </script>
+</body>
+</html>
